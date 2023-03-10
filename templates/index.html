@@ -1,0 +1,30 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Map</title>
+    <link rel="icon" href="{% static 'favicon.co' %}" type="image/x-icon">
+    <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}" type="text/css">
+</head>
+<body>
+     <div style="position: center" class="text-center">
+        <h2 class="mt-5">Choisissez la route à voir</h2><br><br>
+         <div class="row">
+             <div class="col-md-6 mx-auto">
+                <form action="{% url 'detail' %}" method="post" class="container-sm">
+                    {% csrf_token %}
+                    <label for="condition">Routes : </label><br><br>
+                    <select name="rn" id="condition" class="form-select text-center">
+                        <option value="RNP">ROUTE NATIONALE PRINCIPALE - RNP</option>
+                        <option value="RNS">ROUTE NATIONALE SECONDAIRE - RNS</option>
+                        <option value="RNT">ROUTE NATIONALE TERTIAIRE - RNT</option>
+                        <option value="RPT">ROUTE PROVINCIALE DE TRANSFERT - RPT</option>
+                    </select><br><br><br>
+                    <input type="submit" value="Envoyer" class="btn btn-primary">
+                </form>
+             </div>
+         </div>
+      </div>
+</body>
+</html>

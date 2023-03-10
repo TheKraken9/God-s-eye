@@ -1,0 +1,114 @@
+{% load leaflet_tags %}
+{% load static %}
+{% load leaflet %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Result</title>
+    {% leaflet_css %}
+    {% leaflet_js %}
+    <link rel="shortcut icon" type="image/png" href="{% static 'favicon.co' %}"/>
+    <link rel="icon" href="{% static 'favicon.co' %}" type="image/x-icon">
+    <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}" type="text/css">
+    <script src="{% static 'js/leaflet.ajax.js' %}" type="javascript"></script>
+</head>
+<body>
+    <div>
+      <a href="http://127.0.0.1:8000/polls/detail/" class="btn btn-danger m-2">< Retour</a>
+      {% block content %}
+          <div id="mapp" style="width: 600px; height: 640px; float:right;">
+              <div id="mappid"  style="width: 600px; height: 630px; cursor: pointer" class="rounded-3 shadow-sm mt-2">
+                {% leaflet_map "mappid" %}
+              </div>
+          </div>
+      {% endblock %}
+  </div>
+
+{% block extra_js %}
+    <script>
+        let mapp = L.map('mappid').setView([-18.7669477, 46.8691069], 6);
+        ///OPENSTREETMAP
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: 'TheKraken9 &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> ITUniversity',
+            maxZoom: 18,
+        }).addTo(mapp);
+
+///HOLE OF THE ROADS
+      let myLayer = L.geoJSON(null, {
+          style: {
+              color : 'blue',
+              weight: 1.5
+          },
+          interactive: false
+      }).addTo(mapp);
+      myLayer.off('click')
+      let myFeatures = JSON.parse('{{ my_geojson|escapejs|safe }}');
+      myLayer.addData(myFeatures);
+
+      let holeLayer = L.geoJSON(null, {
+          style: {
+              color : 'black',
+              weight: 2
+          }
+      }).addTo(mapp);
+      let holeFeatures = JSON.parse('{{ hole_geojson|escapejs|safe }}');
+      holeLayer.addData(holeFeatures);
+      holeLayer.bringToFront();
+
+      let pointLayer = L.geoJSON(null, {
+          style: {
+              color : 'yellow',
+              weight: 2
+          }
+      }).addTo(mapp);
+      let pointFeatures = JSON.parse('{{ point_geojson|escapejs|safe }}');
+      pointLayer.addData(pointFeatures);
+      pointLayer.bindPopup("point");
+      pointLayer.bringToFront();
+
+      let makeLayer = L.geoJSON(null, {
+          style: {
+              color : 'pink',
+              weight: 2
+          }
+      }).addTo(mapp);
+      let makeFeatures = JSON.parse('{{ make_geojson|escapejs|safe }}');
+      makeLayer.addData(makeFeatures);
+      makeLayer.bindPopup("point");
+      makeLayer.bringToFront();
+
+      mapp.on('click', function (event){
+          let lat = event.latlng.lat;
+          let lng = event.latlng.lng;
+
+          mapp.eachLayer(function (layer) {
+              if(layer instanceof L.GeoJSON){
+                  layer.eachLayer(function (featureLayer) {
+                      if(featureLayer.getBounds().contains([lat, lng])) {
+                          featureLayer.setStyle({color: 'red', weight: 1.5});
+                          console.log(featureLayer.feature.properties);
+                          start = featureLayer.feature.properties.pkbegin;
+                          end = featureLayer.feature.properties.pkend;
+                          if (start === undefined) {
+                              start = featureLayer.feature.properties.start_km
+                              end = featureLayer.feature.properties.end_km
+                          }
+                          start_km.innerHTML = "DÉBUT PK : " + start;
+                          end_km.innerHTML = "FIN PK : " + end;
+                      } else {
+                          featureLayer.setStyle({color: 'black', weight: 1.5});
+                      }
+                  });
+              }
+          });
+      });
+        let geojsonLayer = new L.GeoJSON.AJAX("{% url 'routes' %}", {
+            onEachFeature: function (feature, layer) {
+                layer.bindPopup("Route " + feature.properties.roadno);
+            }
+        }).addTo(mapp);
+    </script>
+    {% endblock %}
+</body>
+</html>

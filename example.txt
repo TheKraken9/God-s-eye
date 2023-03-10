@@ -1,0 +1,69 @@
+import psycopg2
+
+# Connexion à la base de données
+conn = psycopg2.connect(
+    host="localhost",
+    database="ma_base_de_donnees",
+    user="mon_utilisateur",
+    password="mon_mot_de_passe"
+)
+
+# Création d'un curseur pour exécuter les requêtes
+cur = conn.cursor()
+
+# Récupération de tous les enregistrements de la table "point"
+cur.execute("SELECT id, nom, geom FROM point")
+
+# Boucle sur tous les enregistrements de la table "point"
+for id, nom, geom in cur.fetchall():
+    # Exécution de la requête pour chaque point
+    cur.execute(f"""
+        SELECT h.gid, h.name, h.geom,
+               st_distanceSphere(
+                   st_setsrid(h.geom, 4326),
+                   st_setsrid(st_makepoint({geom.x}, {geom.y}), 4326)
+               ) AS distance
+        FROM hospital h
+        WHERE st_distanceSphere(
+            st_setsrid(h.geom, 4326),
+            st_setsrid(st_makepoint({geom.x}, {geom.y}), 4326)
+        ) <= 1000
+    """)
+
+    # Affichage des résultats pour chaque point
+    print(f"Résultats pour le point '{nom}' (ID={id}):")
+    for row in cur.fetchall():
+        print(row)
+
+# Fermeture du curseur et de la connexion
+cur.close()
+conn.close()
+
+
+select gid, name, geom
+from hospital
+where st_distanceSphere(
+	st_setsrid(hospital.geom , 4326),
+	st_setsrid(st_makepoint(47.522629, -18.901951), 4326)) <= 1000;
+
+
+SELECT h.gid, h.name, h.geom
+       st_distanceSphere(
+           st_setsrid(h.geom, 4326),
+           st_setsrid(st_makepoint(st_x(p.geom), st_y(p.geom)), 4326)
+       ) AS distance
+FROM environment h
+CROSS JOIN holeintern p
+WHERE st_distanceSphere(
+    st_setsrid(h.geom, 4326),
+    st_setsrid(st_makepoint(st_x(p.geom), st_y(p.geom)), 4326)
+) <= 1000;
+
+SELECT distinct h.gid as gid, h.name as name, h.geom as geom
+FROM environment h, holeintern r
+WHERE ST_DWithin(h.geom, r.geom, 10000) AND r.idHole = 1
+
+SELECT h.name as name, h.geom as geom
+FROM hospital h
+CROSS JOIN holeintern p
+WHERE st_DistanceSphere(st_setsrid(h.geom, 4326), st_setsrid(p.geom, 4326)) <= 100000;

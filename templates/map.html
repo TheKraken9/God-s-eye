@@ -1,0 +1,196 @@
+{% load leaflet_tags %}
+{% load static %}
+{% load leaflet %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Voir les routes</title>
+    {% leaflet_css %}
+    {% leaflet_js %}
+    <link rel="shortcut icon" type="image/png" href="{% static 'favicon.co' %}"/>
+    <link rel="icon" href="{% static 'favicon.co' %}" type="image/x-icon">
+    <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}" type="text/css">
+    <script src="{% static 'js/leaflet.ajax.js' %}" type="javascript"></script>
+  </head>
+  <body style="width: 99%; height: auto; padding: 0; margin: 0; display: flex; cursor: pointer">
+  <div class="row">
+  {% block content %}
+          <div class="col-6">
+            <div id="map" style="width: 610px; height: 640px; float: left">
+                <div id="mapid" style="width: 600px; height: 640px; float: left; cursor: pointer" class="shadow-sm mt-2 ms-2 rounded-3">
+                    {% leaflet_map "mapid" %}
+                </div>
+              </div>
+          </div>
+      <div class="col-5">
+        <div class="container-sm rounded-3 shadow-lg mt-2 mb-2 w-50 bg-danger p-2 ps-3">
+            <small id="start_km">DÉBUT PK</small><br>
+            <small id="end_km">FIN PK</small>
+        </div>
+        <!--<div style="float:right;">
+          <h2 class="ms-5 mb-5 text-center">Entrez votre condition</h2>
+          <form action="{% url 'which_road' %}" method="post">
+                {% csrf_token %}
+              <label for="condition"><small>Routes spécifiques</small></label>
+              <div class="row">
+                    <select name="road" class="form-select">
+                        {% for foo in nationalroute %}
+                            <option value="{{ foo.3 }}">{{ foo.0 }} ({{ foo.1 }} - {{ foo.2 }}) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {{ foo.3 }} &nbsp; -- &nbsp; {{ foo.4 }}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="submit" value="Envoyer" style="float:right; margin-right: 10px" class="btn btn-primary mt-1">
+              </div>
+          </form><br>-->
+          <form action="{% url 'all_which_road' %}" method="post">
+                {% csrf_token %}
+                <label for="condition"><small>Routes/route nationale</small></label>
+              <div class="row">
+                    <select name="road" class="form-select">
+                        {% for foo in allnationalroute %}
+                            <option value="{{ foo.0 }}">{{ foo.0 }}</option>
+                        {% endfor %}
+                    </select><br>
+                    <input type="submit" value="Envoyer" style="float:right; margin-right: 10px" class="btn btn-primary mt-1">
+              </div>
+          </form><br>
+          <!--<form action="{% url 'all_all_which_road' %}" method="post">
+                {% csrf_token %}
+                <label for="condition"><small>Routes/toutes les routes nationales</small></label>
+              <div class="row">
+                    <select name="road" class="form-select">
+                        {% for foo in allnationalroute %}
+                            <option value="{{ foo.0 }}">{{ foo.0 }}</option>
+                        {% endfor %}
+                    </select><br>
+                    <input type="submit" value="Envoyer" style="float:right; margin-right: 10px" class="btn btn-primary mt-1">
+              </div>
+          </form><br>-->
+          <form action="{% url 'request' %}" method="post">
+                {% csrf_token %}
+              <label for="condition"><small>Entrez votre requete SQL</small></label>
+              <div class="row">
+                <input type="text" name="request" id="condition" class="form-control" placeholder="select * from holedescri where pkend"><br>
+                <input type="submit" value="Envoyer" style="float:right; margin-right: 10px" class="btn btn-primary mt-1">
+              </div>
+          </form><br>
+            <form action="{% url 'route_request' %}" method="post">
+                {% csrf_token %}
+              <label for="condition"><small>Entrez ici</small></label>
+              <div class="row">
+                <select name="road" class="form-select">
+                    {% for foo in allnationalroute %}
+                        <option value="{{ foo.0 }}">{{ foo.0 }}</option>
+                    {% endfor %}
+                </select><br>
+                <input type="text" name="start_km" id="condition" class="form-control" placeholder="start_km"><br>
+                <input type="text" name="end_km" id="condition" class="form-control" placeholder="end_km"><br>
+                <input type="submit" value="Envoyer" style="float:right; margin-right: 10px" class="btn btn-primary mt-1">
+              </div>
+          </form><br>
+            <form action="{% url 'route_requests' %}" method="post">
+                {% csrf_token %}
+              <label for="condition"><small>Entrez ici</small></label>
+              <div class="row">
+                <input type="text" name="start_km" id="condition" class="form-control" placeholder="start_km"><br>
+                <input type="text" name="end_km" id="condition" class="form-control" placeholder="end_km"><br>
+                <input type="submit" value="Envoyer" style="float:right; margin-right: 10px" class="btn btn-primary mt-1">
+              </div>
+          </form><br>
+            </form><br>
+            <form action="{% url 'result' %}" method="post">
+                {% csrf_token %}
+              <label for="condition"><small>Entrez ici</small></label>
+              <div class="row">
+                <select name="road" class="form-select">
+                    {% for foo in allnationalroute %}
+                        <option value="{{ foo.0 }}">{{ foo.0 }}</option>
+                    {% endfor %}
+                </select><br>
+                <input type="text" name="pk" id="condition" class="form-control" placeholder="pk"><br>
+                <input type="submit" value="Envoyer" style="float:right; margin-right: 10px" class="btn btn-primary mt-1">
+              </div>
+            </form><br>
+
+             <form action="{% url 'descri' %}" method="post">
+                {% csrf_token %}
+              <label for="condition"><small>Niveau de priorité</small></label>
+              <div class="row">
+                <select name="condition" class="form-select">
+                    {% for foo in desc %}
+                        <option value="{{ foo.name }}">{{ foo.name }}</option>
+                    {% endfor %}
+                </select><br>
+                <input type="text" name="descri" id="condition" class="form-control" placeholder="pk"><br>
+                <input type="submit" value="Envoyer" style="float:right; margin-right: 10px" class="btn btn-primary mt-1">
+              </div>
+            </form><br>
+          </div>
+        </div>
+      </div>
+  {% endblock %}
+
+  {% block extra_js %}
+    <script>
+        let map = L.map('mapid').setView([-18.7669477, 46.8691069], 6);
+        ///OPENSTREETMAP
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: 'TheKraken9 &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> ITUniversity',
+        maxZoom: 18,
+      }).addTo(map);
+
+///HOLE OF THE ROADS
+      let myLayer = L.geoJSON(null, {
+          style: {
+              color : 'white',
+              weight: 3
+          }
+      }).addTo(map);
+      let myFeatures = JSON.parse('{{ my_geojson|escapejs|safe }}');
+      myLayer.addData(myFeatures);
+
+      let holedescLayer = L.geoJSON(null, {
+          style: {
+              color : 'black',
+              weight: 1.5
+          }
+      }).addTo(map);
+      let holedescFeatures = JSON.parse('{{ my_holedesc|escapejs|safe }}');
+      holedescLayer.addData(holedescFeatures);
+
+      let holeinternLayer = L.geoJSON(null, {
+          style: {
+              color : 'red',
+              weight: 1.5
+          }
+      }).addTo(map);
+      let holeinternFeatures = JSON.parse('{{ my_holeintern|escapejs|safe }}');
+      holeinternLayer.addData(holeinternFeatures);
+
+      let envLayer = L.geoJSON(null, {
+          style: {
+              color : 'red',
+              weight: 1.5
+          }
+      }).addTo(map);
+      let envFeatures = JSON.parse('{{ my_environment|escapejs|safe }}');
+      envLayer.addData(envFeatures);
+
+      var myGeoJSON = {{ my_environment|safe }};
+      var llayer = L.geoJSON(myGeoJSON, {
+            onEachFeature: function (feature, layer) {
+                layer.bindPopup(feature.properties.name);
+            }
+        }).addTo(map);
+
+
+      let geojsonLayer = new L.GeoJSON.AJAX("{% url 'routes' %}", {
+            onEachFeature: function (feature, layer) {
+                layer.bindPopup("Route " + feature.properties.roadno);
+            }
+      }).addTo(map);
+    </script>
+    {% endblock %}
+  </body>
+</html>
+
